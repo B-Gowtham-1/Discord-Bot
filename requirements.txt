@@ -1,5 +1,3 @@
-discord.py
+discord
 flask
-sqlite3
-re
-os
+
