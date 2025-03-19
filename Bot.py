@@ -10,9 +10,9 @@ keep_alive()
 
 # Configuration
 
-STORAGE_CHANNEL_ID = 123456789012345678  # Replace with your link-sharing channel ID
-RESPONSE_CHANNEL_ID = 123456789012345678  # Replace with your response channel ID
-ALLOWED_ROLE = "Student"  # Replace with the role allowed to use the bot
+STORAGE_CHANNEL_ID =1351481296731508756  # Replace with your link-sharing channel ID
+RESPONSE_CHANNEL_ID = 1351577625403064432  # Replace with your response channel ID
+ALLOWED_ROLE = "Member"  # Replace with the role allowed to use the bot
 
 # Setup bot
 intents = discord.Intents.default()
