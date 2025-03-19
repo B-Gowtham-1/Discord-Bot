@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import os
-
+TOKEN = os.getenv("TOKEN")
 # Configuration
 STORAGE_CHANNEL_ID = 1351481296731508756 # Replace with your link-storage channel ID
 RESPONSE_CHANNEL_ID = 1351577625403064432  # Replace with your response channel ID
@@ -46,5 +46,5 @@ async def get(ctx, *, keyword: str):
         await ctx.send("❌ No messages found with that keyword.")
 
 # Run the bot
-TOKEN = "MTM1MTg5NjczNjA3NDk1Njk2Mw.GoxDPj.hXZPJ0lv5PKmfU2hM-ICgHkUvKx2H-vcEORWS4"  # Replace with your bot token
+  # Replace with your bot token
 bot.run(TOKEN)
