@@ -1,2 +1,5 @@
 discord.py
 flask
+sqlite3
+re
+os
