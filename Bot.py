@@ -1,66 +1,50 @@
 import discord
-import sqlite3
-import re
 from discord.ext import commands
 import os
-TOKEN = os.getenv("TOKEN")
-from keep_alive import keep_alive
-keep_alive()
-
 
 # Configuration
-
-STORAGE_CHANNEL_ID =1351481296731508756  # Replace with your link-sharing channel ID
+STORAGE_CHANNEL_ID = 1351481296731508756 # Replace with your link-storage channel ID
 RESPONSE_CHANNEL_ID = 1351577625403064432  # Replace with your response channel ID
-ALLOWED_ROLE = "Member"  # Replace with the role allowed to use the bot
+ALLOWED_ROLE = "Member"  # Role required to use the bot
 
-# Setup bot
+# Bot setup
 intents = discord.Intents.default()
 intents.messages = True
 intents.guilds = True
+intents.message_content = True  # Ensure message content intent is enabled
+
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# Database setup
-conn = sqlite3.connect("links.db")
-c = conn.cursor()
-c.execute('''CREATE TABLE IF NOT EXISTS links (id INTEGER PRIMARY KEY, keyword TEXT, url TEXT)''')
-conn.commit()
-
-# Function to extract links
-def extract_links(text):
-    return re.findall(r'(https?://\S+)', text)
-
-# Event: Store links when a message is sent in the storage channel
-@bot.event
-async def on_message(message):
-    if message.channel.id == STORAGE_CHANNEL_ID and message.author != bot.user:
-        links = extract_links(message.content)
-        for link in links:
-            keyword = message.content.replace(link, "").strip().lower()  # Use the rest as keyword
-            c.execute("INSERT INTO links (keyword, url) VALUES (?, ?)", (keyword, link))
-            conn.commit()
-        await message.add_reaction("✅")  # Confirmation emoji
-    await bot.process_commands(message)
-
-# Command: Retrieve links based on keywords
+# Command: Search for messages with keyword in the storage channel
 @bot.command()
 async def get(ctx, *, keyword: str):
     if ctx.channel.id != RESPONSE_CHANNEL_ID:
-        return  # Ignore messages outside response channel
+        return  # Ignore if command is used outside the response channel
 
-    # Check if user has the allowed role
+    # Check if user has the required role
     if ALLOWED_ROLE not in [role.name for role in ctx.author.roles]:
         await ctx.send("❌ You do not have permission to use this command.")
         return
 
-    c.execute("SELECT url FROM links WHERE keyword=?", (keyword.lower(),))
-    results = c.fetchall()
+    storage_channel = bot.get_channel(STORAGE_CHANNEL_ID)
+    if not storage_channel:
+        await ctx.send("❌ Could not access the storage channel.")
+        return
 
-    if results:
-        response = "\n".join([row[0] for row in results])
-        await ctx.send(f"📚 Here are the links for **{keyword}**:\n{response}")
+    messages_found = []
+    
+    # Search messages in the storage channel
+    async for message in storage_channel.history(limit=100):  # Adjust limit if needed
+        if keyword.lower() in message.content.lower():
+            messages_found.append(f"🔹 {message.author.display_name}: {message.content}")
+
+    # Send the results
+    if messages_found:
+        response = "\n\n".join(messages_found)
+        await ctx.send(f"📚 Messages containing **{keyword}**:\n{response}")
     else:
-        await ctx.send("❌ No links found for that keyword.")
+        await ctx.send("❌ No messages found with that keyword.")
 
 # Run the bot
+TOKEN = "MTM1MTg5NjczNjA3NDk1Njk2Mw.GoxDPj.hXZPJ0lv5PKmfU2hM-ICgHkUvKx2H-vcEORWS4"  # Replace with your bot token
 bot.run(TOKEN)
